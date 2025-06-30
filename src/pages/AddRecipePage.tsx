@@ -16,7 +16,7 @@ export default function AddRecipePage() {
 
     const [title, setTitle] = useState('')
     const [description, setDescription] = useState('')
-    const [cookingTime, setCookingTime] = useState(0)
+    const [cookingTime, setCookingTime] = useState<number>(NaN)
     const [ingredients, setIngredients] = useState([''])
 
     const handleIngredientChange = (value: string, index: number) => {
