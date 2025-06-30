@@ -10,6 +10,7 @@ import RegisterPage from '../pages/RegisterPage'
 import AddRecipePage from '../pages/AddRecipePage'
 import React from 'react'
 import Navbar from "../components/Navbar.tsx";
+import RecipePage from '../pages/RecipePage.tsx';
 
 const rootRoute = createRootRoute({
     component: () => (
@@ -44,11 +45,18 @@ const addRecipeRoute = createRoute({
     component: AddRecipePage,
 })
 
+export const recipeDetailRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/recipes/$recipeId',
+    component: RecipePage,
+})
+
 const routeTree = rootRoute.addChildren([
     homeRoute,
     loginRoute,
     registerRoute,
     addRecipeRoute,
+    recipeDetailRoute,
 ])
 
 export const router = createRouter({ routeTree })

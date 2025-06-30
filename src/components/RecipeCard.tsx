@@ -1,20 +1,22 @@
-import React from 'react';
-import { useAuth } from '../hooks/useAuth'
-import { api } from '../services/api'
-import { OutputRecipeDto } from '../types/recipe'
-import { useState } from 'react'
-import { toast } from 'react-toastify'
+import React, { useState } from 'react';
+import { OutputRecipeDto } from '../types/recipe';
+import { useAuth } from '../hooks/useAuth';
+import { api } from '../services/api';
+import { toast } from 'react-toastify';
 
-interface Props {
+type Props = {
   recipe: OutputRecipeDto
-}
+};
 
 export default function RecipeCard({ recipe }: Props) {
-  const { isLoggedIn, token } = useAuth()
-  const [liked, setLiked] = useState(recipe.isLiked)
-  const [likes, setLikes] = useState(recipe.likeCount)
+  const { isLoggedIn, token } = useAuth();
+  const [liked, setLiked] = useState(recipe.isLiked);
+  const [likes, setLikes] = useState(recipe.likeCount);
+  const [expanded, setExpanded] = useState(false);
 
-  const toggleLike = async () => {
+  const toggleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
     if (!isLoggedIn) {
       toast.info('Login to like')
       return
@@ -26,28 +28,62 @@ export default function RecipeCard({ recipe }: Props) {
           headers: { Authorization: `Bearer ${token}` },
         })
         setLikes((l) => l + 1)
+        setLiked(true)
       } else {
         await api.delete(`/recipes/${recipe.id}/like`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         setLikes((l) => l - 1)
+        setLiked(false)
       }
-      setLiked(!liked)
-    } catch {
-      toast.error('Error when liking')
+    } catch (error: any) {
+      if (error.response?.status === 409) {
+        setLiked(true)
+        toast.info('Already liked')
+      } else {
+        toast.error('Error when liking')
+      }
     }
-  }
+  };
 
   return (
-    <div className="border rounded-xl p-4 shadow-sm bg-white">
-      <h3 className="text-lg font-bold">{recipe.title}</h3>
-      <p className="text-sm text-gray-700 line-clamp-3 mb-2">{recipe.description}</p>
-      <p className="text-xs text-gray-500">Time: {recipe.cookingTime} min</p>
-      <div className="flex justify-between items-center mt-2">
-        <button onClick={toggleLike} className="text-red-600 text-sm">
+    <div
+      onClick={() => setExpanded(prev => !prev)}
+      className={`cursor-pointer transition-all duration-300 border rounded-lg shadow hover:shadow-lg p-4 ${
+        expanded ? 'bg-gray-100' : 'bg-white'
+      }`}
+    >
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">{recipe.title}</h2>
+        <button
+          onClick={toggleLike}
+          className="text-red-600 text-lg"
+          title={liked ? 'Unlike' : 'Like'}
+        >
           {liked ? '❤️' : '🤍'} {likes}
         </button>
       </div>
+      <p className="text-gray-600">Cooking time: {recipe.cookingTime} min.</p>
+
+      {expanded && (
+        <div className="mt-2">
+          <h3 className="font-medium">Ingredients:</h3>
+          <ul className="list-disc list-inside text-sm text-gray-700">
+            {recipe.ingredients.map((ing, idx) => (
+              <li key={idx}>{ing}</li>
+            ))}
+          </ul>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              window.location.href = `/recipes/${recipe.id}`;
+            }}
+            className="mt-3 inline-block text-blue-600 underline text-sm"
+          >
+            Show full →
+          </button>
+        </div>
+      )}
     </div>
-  )
+  );
 }

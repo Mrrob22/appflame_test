@@ -2,13 +2,13 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { api } from '../services/api'
 import type { OutputRecipeDto } from '../types/recipe'
 
-// const PAGE_SIZE = 10
-
 export function useRecipes(filters: {
   search?: string
   maxCookingTime?: number
   minIngredients?: number
 }) {
+  const token = localStorage.getItem('token')
+
   return useInfiniteQuery({
     queryKey: ['recipes', filters],
     initialPageParam: 1,
@@ -19,6 +19,9 @@ export function useRecipes(filters: {
           page: pageParam,
           limit: 10,
         },
+        headers: token
+          ? { Authorization: `Bearer ${token}` }
+          : undefined,
       })
       return response.data
     },
@@ -26,4 +29,3 @@ export function useRecipes(filters: {
       lastPage.length < 10 ? undefined : allPages.length + 1,
   })
 }
-
