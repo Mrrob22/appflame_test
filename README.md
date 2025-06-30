@@ -21,6 +21,7 @@ A simple recipe sharing app where users can browse, like, and add recipes. Inclu
 
 
 git clone https://github.com/your-username/recipe-app.git
+
 cd recipe-app
 
 2. **Install dependencies**
